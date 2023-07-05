@@ -23,6 +23,8 @@ function RaycastVehicle(options) {
    */
   this.chassisBody = options.chassisBody;
 
+  this.defaultGround = options.defaultGround;
+
   /**
    * An array of WheelInfo objects.
    * @property {array} wheelInfos
@@ -309,6 +311,8 @@ RaycastVehicle.prototype.removeFromWorld = function (world) {
 
 var castRay_rayvector = new Vec3();
 var castRay_target = new Vec3();
+var flat_normal = new Vec3(0, 1, 0);
+const plane_depth = -0.092;
 RaycastVehicle.prototype.castRay = function (wheel) {
   var rayvector = castRay_rayvector;
   var target = castRay_target;
@@ -333,17 +337,29 @@ RaycastVehicle.prototype.castRay = function (wheel) {
   chassisBody.collisionResponse = false;
 
   // Cast ray against world
-  this.world.rayTest(source, target, raycastResult, {
-    collisionFilterMask: chassisBody.collisionFilterMask,
-    collisionFilterGroup: chassisBody.collisionFilterGroup,
-  });
+  //this.world.rayTest(source, target, raycastResult, {
+  //  collisionFilterMask: chassisBody.collisionFilterMask,
+  //  collisionFilterGroup: chassisBody.collisionFilterGroup,
+  //});
+
+  raycastResult.distance = wheel.chassisConnectionPointWorld.y - plane_depth;
+  raycastResult.hitNormalWorld.set(0, 1, 0);
+  raycastResult.hitPointWorld.set(
+    wheel.worldTransform.position.x,
+    plane_depth,
+    wheel.worldTransform.position.z
+  );
+  raycastResult.body = this.defaultGround;
+  raycastResult.hasHit = true;
+
   chassisBody.collisionResponse = oldState;
 
-  var object = raycastResult.body;
+  //var object = raycastResult.body;
 
   wheel.raycastResult.groundObject = 0;
 
-  if (object) {
+  //if (object) {
+  if (true) {
     depth = raycastResult.distance;
     wheel.raycastResult.hitNormalWorld = raycastResult.hitNormalWorld;
     wheel.isInContact = true;
